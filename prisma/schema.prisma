@@ -1,0 +1,189 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model address {
+  id         BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  user_id    BigInt    @db.UnsignedBigInt
+  street     String    @db.VarChar(255)
+  number     String    @db.VarChar(255)
+  complement String    @db.VarChar(255)
+  created_at DateTime? @db.Timestamp(0)
+  updated_at DateTime? @db.Timestamp(0)
+  users      users     @relation(fields: [user_id], references: [id], onUpdate: Restrict, map: "address_user_id_foreign")
+
+  @@index([user_id], map: "address_user_id_foreign")
+}
+
+model app_cards_credit {
+  id                BigInt              @id @default(autoincrement()) @db.UnsignedBigInt
+  user_id           BigInt              @db.UnsignedBigInt
+  brand             String              @db.VarChar(255)
+  last_digits       String              @db.VarChar(255)
+  cvv               String              @db.VarChar(255)
+  hash              String              @db.VarChar(255)
+  status            String              @default("active") @db.VarChar(255)
+  created_at        DateTime?           @db.Timestamp(0)
+  updated_at        DateTime?           @db.Timestamp(0)
+  users             users               @relation(fields: [user_id], references: [id], onUpdate: Restrict, map: "app_cards_credit_user_id_foreign")
+  app_orders        app_orders[]
+  app_subscriptions app_subscriptions[]
+
+  @@index([user_id], map: "app_cards_credit_user_id_foreign")
+}
+
+model app_categories {
+  id           BigInt         @id @default(autoincrement()) @db.UnsignedBigInt
+  name         String         @db.VarChar(255)
+  type         String         @db.VarChar(255)
+  order_by     Int
+  created_at   DateTime?      @db.Timestamp(0)
+  updated_at   DateTime?      @db.Timestamp(0)
+  app_invoices app_invoices[]
+}
+
+model app_invoices {
+  id             BigInt         @id @default(autoincrement()) @db.UnsignedBigInt
+  user_id        BigInt         @db.UnsignedBigInt
+  wallet_id      BigInt         @db.UnsignedBigInt
+  category_id    BigInt         @db.UnsignedBigInt
+  invoice_of     Int?
+  description    String         @db.VarChar(255)
+  type           String         @db.VarChar(255)
+  value          Decimal        @db.Decimal(10, 2)
+  currency       String         @default("BRL") @db.VarChar(255)
+  due_at         DateTime       @db.Date
+  repeat_when    String         @db.VarChar(255)
+  period         String         @default("month") @db.VarChar(255)
+  enrollments    Int?
+  enrollments_of Int?
+  status         String         @default("unpaid") @db.VarChar(255)
+  created_at     DateTime?      @db.Timestamp(0)
+  updated_at     DateTime?      @db.Timestamp(0)
+  app_categories app_categories @relation(fields: [category_id], references: [id], onUpdate: Restrict, map: "app_invoices_category_id_foreign")
+  users          users          @relation(fields: [user_id], references: [id], onUpdate: Restrict, map: "app_invoices_user_id_foreign")
+  app_wallets    app_wallets    @relation(fields: [wallet_id], references: [id], onUpdate: Restrict, map: "app_invoices_wallet_id_foreign")
+
+  @@index([category_id], map: "app_invoices_category_id_foreign")
+  @@index([user_id], map: "app_invoices_user_id_foreign")
+  @@index([wallet_id], map: "app_invoices_wallet_id_foreign")
+}
+
+model app_orders {
+  id                BigInt            @id @default(autoincrement()) @db.UnsignedBigInt
+  user_id           BigInt            @db.UnsignedBigInt
+  card_id           BigInt            @db.UnsignedBigInt
+  subscription_id   BigInt            @db.UnsignedBigInt
+  transaction       String            @db.VarChar(255)
+  amount            Decimal           @db.Decimal(10, 2)
+  status            String            @db.VarChar(255)
+  created_at        DateTime?         @db.Timestamp(0)
+  updated_at        DateTime?         @db.Timestamp(0)
+  app_cards_credit  app_cards_credit  @relation(fields: [card_id], references: [id], onUpdate: Restrict, map: "app_orders_card_id_foreign")
+  app_subscriptions app_subscriptions @relation(fields: [subscription_id], references: [id], onUpdate: Restrict, map: "app_orders_subscription_id_foreign")
+  users             users             @relation(fields: [user_id], references: [id], onUpdate: Restrict, map: "app_orders_user_id_foreign")
+
+  @@index([card_id], map: "app_orders_card_id_foreign")
+  @@index([subscription_id], map: "app_orders_subscription_id_foreign")
+  @@index([user_id], map: "app_orders_user_id_foreign")
+}
+
+model app_plans {
+  id                BigInt              @id @default(autoincrement()) @db.UnsignedBigInt
+  name              String              @db.VarChar(255)
+  period            String              @db.VarChar(255)
+  period_str        String              @db.VarChar(255)
+  price             Decimal             @db.Decimal(10, 2)
+  status            String              @db.VarChar(255)
+  created_at        DateTime?           @db.Timestamp(0)
+  updated_at        DateTime?           @db.Timestamp(0)
+  app_subscriptions app_subscriptions[]
+}
+
+model app_subscriptions {
+  id               BigInt           @id @default(autoincrement()) @db.UnsignedBigInt
+  user_id          BigInt           @db.UnsignedBigInt
+  plan_id          BigInt           @db.UnsignedBigInt
+  card_id          BigInt           @db.UnsignedBigInt
+  status           String           @default("active") @db.VarChar(255)
+  pay_status       String           @default("active") @db.VarChar(255)
+  started          DateTime         @db.Date
+  due_day          Int
+  next_due         DateTime         @db.Date
+  last_charge      DateTime         @db.Date
+  created_at       DateTime?        @db.Timestamp(0)
+  updated_at       DateTime?        @db.Timestamp(0)
+  app_orders       app_orders[]
+  app_cards_credit app_cards_credit @relation(fields: [card_id], references: [id], onUpdate: Restrict, map: "app_subscriptions_card_id_foreign")
+  app_plans        app_plans        @relation(fields: [plan_id], references: [id], onUpdate: Restrict, map: "app_subscriptions_plan_id_foreign")
+  users            users            @relation(fields: [user_id], references: [id], onUpdate: Restrict, map: "app_subscriptions_user_id_foreign")
+
+  @@index([card_id], map: "app_subscriptions_card_id_foreign")
+  @@index([plan_id], map: "app_subscriptions_plan_id_foreign")
+  @@index([user_id], map: "app_subscriptions_user_id_foreign")
+}
+
+model app_wallets {
+  id           BigInt         @id @default(autoincrement()) @db.UnsignedBigInt
+  user_id      BigInt         @db.UnsignedBigInt
+  wallet       String         @db.VarChar(255)
+  free         Int
+  created_at   DateTime?      @db.Timestamp(0)
+  updated_at   DateTime?      @db.Timestamp(0)
+  app_invoices app_invoices[]
+  users        users          @relation(fields: [user_id], references: [id], onUpdate: Restrict, map: "app_wallets_user_id_foreign")
+
+  @@index([user_id], map: "app_wallets_user_id_foreign")
+}
+
+model mail_queue {
+  id              BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  subject         String    @db.VarChar(255)
+  body            String    @db.Text
+  from_email      String    @db.VarChar(255)
+  from_name       String    @db.VarChar(255)
+  recipient_email String    @db.VarChar(255)
+  recipient_name  String    @db.VarChar(255)
+  sent_at         DateTime  @default(now()) @db.Timestamp(0)
+  created_at      DateTime? @db.Timestamp(0)
+  updated_at      DateTime? @db.Timestamp(0)
+}
+
+model notifications {
+  id         BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  image      String    @db.VarChar(255)
+  title      String    @db.VarChar(255)
+  link       String    @db.VarChar(255)
+  view       Int
+  created_at DateTime? @db.Timestamp(0)
+  updated_at DateTime? @db.Timestamp(0)
+}
+
+model users {
+  id                BigInt              @id @default(autoincrement()) @db.UnsignedBigInt
+  name              String              @db.VarChar(255)
+  email             String              @unique(map: "users_email_unique") @db.VarChar(255)
+  email_verified_at DateTime?           @db.Timestamp(0)
+  password          String              @db.VarChar(255)
+  level             Int
+  genre             String?             @db.VarChar(255)
+  datebirth         DateTime?           @db.Date
+  document          String?             @db.VarChar(255)
+  photo             String?             @db.VarChar(255)
+  status            String              @default("registred") @db.VarChar(255)
+  remember_token    String?             @db.VarChar(100)
+  created_at        DateTime?           @db.Timestamp(0)
+  updated_at        DateTime?           @db.Timestamp(0)
+  address           address[]
+  app_cards_credit  app_cards_credit[]
+  app_invoices      app_invoices[]
+  app_orders        app_orders[]
+  app_subscriptions app_subscriptions[]
+  app_wallets       app_wallets[]
+  posts             posts[]
+}
