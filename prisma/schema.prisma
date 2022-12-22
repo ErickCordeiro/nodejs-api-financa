@@ -185,5 +185,4 @@ model users {
   app_orders        app_orders[]
   app_subscriptions app_subscriptions[]
   app_wallets       app_wallets[]
-  posts             posts[]
 }
