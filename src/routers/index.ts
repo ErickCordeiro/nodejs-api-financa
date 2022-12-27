@@ -1,7 +1,8 @@
 import { Router } from 'express';
-import { Auth } from '../middlewares/MiddlewareAuth';
+import { Auth } from '../middlewares/AuthMiddleware';
 import AuthController from '../controllers/AuthController';
 import UserController from '../controllers/UserController';
+import MailController from '../controllers/MailController';
 
 const router = Router();
 
@@ -13,6 +14,8 @@ router.post('/login', AuthController.login);
 router.post('/register', AuthController.register);
 router.post('/forgot-password', AuthController.forgot);
 router.post('/reset-password', AuthController.reset);
+
+router.get('/send-mail', MailController.index);
 
 router.get('/users', Auth.private, UserController.index);
 
