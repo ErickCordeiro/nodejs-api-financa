@@ -1,4 +1,5 @@
 import { PrismaClient } from "@prisma/client";
+import bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
 
@@ -35,11 +36,20 @@ export const UserService = {
         });
     },
     create: async (name:string, email:string, password:string) => {
+        let hasUser = await prisma.users.findUnique({
+            where: { email: email }
+        });
+
+        if(hasUser){
+            return new Error("E-mail já cadastrado no banco de dados, verifique!");
+        }
+
+        const hashPwd = await bcrypt.hash(password, 15);
         return await prisma.users.create({
             data: {
                 name: name,
                 email: email,
-                password: password,
+                password: hashPwd,
                 level: 3
             }
         });

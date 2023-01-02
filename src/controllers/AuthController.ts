@@ -48,30 +48,18 @@ const login = async (req: Request, res: Response) => {
 const register = async (req: Request, res: Response) => {
     if(req.body.email && req.body.password){
         let {name, email, password} = req.body; 
+        let newUser = await UserService.create(name, email, password);
 
-        let hasUser = await UserService.findByEmail(email);
-        if(hasUser){
+        if(newUser instanceof Error){
             res.status(404).json({
                 error: true, 
-                message: 'E-mail já cadastrado no banco de dados, verifique!'
+                message: newUser.message,
             });
         }
 
-
-        const hashPwd = await bcrypt.hash(password, 15);
-        let newUser = await UserService.create(name, email, hashPwd);
-
-        const token = Jwt.sign(
-            { id:newUser?.id, email:newUser?.email },
-            process.env.JWT_SECRET_KEY as string,
-            { expiresIn: 21600 } //15 days
-        );
-
         res.status(201).json({
-            success: true, 
-            message: 'Seu registro foi concluído com sucesso!', 
-            token: token,
-            user: newUser
+            success: true,
+            message: "Parabéns! O seu usuário foi criado com sucesso!"
         });
     }
 
