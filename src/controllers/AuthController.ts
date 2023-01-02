@@ -30,14 +30,14 @@ const login = async (req: Request, res: Response) => {
                 }
             );
     
-            res.status(201).json({
+            return res.status(200).json({
                 status: true,
                 token: token,
                 user: user
             });
         }
 
-        res.status(400).json({
+        return res.status(400).json({
             error: true,
             status: false,
             message: 'Whoops... O e-mail não exite em nossa base de dados, verifique!'
@@ -51,19 +51,19 @@ const register = async (req: Request, res: Response) => {
         let newUser = await UserService.create(name, email, password);
 
         if(newUser instanceof Error){
-            res.status(404).json({
+            return res.status(404).json({
                 error: true, 
                 message: newUser.message,
             });
         }
 
-        res.status(201).json({
+        return res.status(201).json({
             success: true,
             message: "Parabéns! O seu usuário foi criado com sucesso!"
         });
     }
 
-    res.status(400).json({
+    return res.status(400).json({
         error:false, 
         message: 'Informações de cadastro não foram enviadas corretamente, verifique!'
     })

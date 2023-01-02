@@ -16,7 +16,7 @@ const index = async (req: Request, res: Response) => {
 
     let info = await transport.sendMail(message);
 
-    res.status(200).json({
+    return res.status(200).json({
         info: info
     });
 };
