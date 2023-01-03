@@ -1,7 +1,7 @@
 import { UserService } from "../UserService";
 
 //Execute test for group UserService
-describe("UserService", () => {
+describe("UserService Test", () => {
 
     let name:string = 'DevBox Test DDD';
     let email:string = 'devbox@gmail.com';
